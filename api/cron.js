@@ -149,6 +149,36 @@ async function createCheckOut(db, date) {
   };
 }
 
+  // Hardcoded blocked dates: DD-MM
+const blockedDates = [
+  "01-01",
+  "04-03",
+  "01-07",
+  "15-08",
+  "28-08",
+  "20-10",
+  "08-11",
+  "25-12" 
+];
+
+function isValidDate() {
+  const today = new Date();
+
+  // Sunday → false
+  if (today.getDay() === 0) {
+    return false;
+  }
+
+
+
+  const day = String(today.getDate()).padStart(2, "0");
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const todayString = `${day}-${month}`;
+
+  // Blocked date → false, otherwise true
+  return !blockedDates.includes(todayString);
+}
+
 module.exports = async function handler(req, res) {
   // Protect the endpoint.
   const authHeader = req.headers.authorization;
@@ -157,6 +187,13 @@ module.exports = async function handler(req, res) {
     return res.status(401).json({
       error: "Unauthorized",
     });
+  }
+
+  if (!isValidDate()) {
+    return res.status(400).json({
+      success:false,
+      message:"Not today"
+    })
   }
 
   try {
